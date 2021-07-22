@@ -1,0 +1,61 @@
+{
+    "env": {
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "no-console": "off",
+        "no-constant-condition": "off",
+        "indent": [
+            "error",
+            "tab",
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "no-unused-vars": "off",
+        "no-empty-pattern": "off",
+        "quotes": [
+            "error",
+            "double"
+        ],
+        "linebreak-style": "off",
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-tabs": "off",
+        "comma-dangle": [
+            "error",
+            "always-multiline"
+        ],
+        "no-return-await": "warn",
+        "no-unneeded-ternary": "warn",
+        "object-shorthand": [
+            "warn",
+            "always"
+        ],
+        "prefer-const": "warn",
+        "eol-last": [
+            "error",
+            "always"
+        ]
+    }
+}
