@@ -1,5 +1,7 @@
-import { Client, ClientOptions, Intents } from "discord.js";
+import { Client, ClientOptions, Intents, Message } from "discord.js";
 import dotenv from "dotenv";
+import fs from "fs";
+import { Command } from "./interfaces/command";
 
 dotenv.config();
 
@@ -21,4 +23,22 @@ const options: ClientOptions = {
 const client = new Client(options);
 client.login(process.env.BOT_TOKEN);
 
-client.once("ready", () => console.log(`Logged in as ${client.user?.tag}!`));
+client.once("ready", async () => {
+	if (!client.user)
+		throw new Error("No bot user detected.");
+	console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on("messageCreate", async (message: Message) => {
+	if (!message.guild) return;
+	if (message.cleanContent === "!deploy" && message.author.id === process.env.BOT_OWNER_ID) {
+		await message.reply({ embeds: [{ description: "Deploying to this guild!" }] });
+		for (const file of fs.readdirSync(`${process.cwd()}/src/commands/`)) {
+			if (!file.endsWith(".ts")) continue;
+
+			const { default: command } = await import(`./commands/${file}`);
+			if (command.prototype instanceof Command)
+				await new command().initialize(message.guild);
+		}
+	}
+});
