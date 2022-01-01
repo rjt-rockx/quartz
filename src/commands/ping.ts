@@ -1,17 +1,18 @@
 import { CommandInteraction, MessageEmbed } from "discord.js";
-import { Command } from "../interfaces/command";
+import { Command, CommandInfo } from "../interfaces/command";
 
 export default class Ping extends Command {
-	info = {
+	info: CommandInfo = {
 		name: "ping",
 		description: "Get the ping of the bot.",
-		guildOnly: false,
+		context: "guild",
+		type: "CHAT_INPUT",
 	};
 
-	async handleInteraction(interaction: CommandInteraction): Promise<void> {
+	async onCommand(interaction: CommandInteraction): Promise<void> {
 		await interaction.reply({
 			embeds: [{ description: `Pong! ${interaction.client.ws.ping}ms` }] as MessageEmbed[],
-			ephemeral: true,
+			ephemeral: false,
 		});
 	}
 }

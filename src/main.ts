@@ -1,7 +1,6 @@
 import { Client, ClientOptions, Intents, Message } from "discord.js";
+import CommandHandler from "./lib/commandhandler";
 import dotenv from "dotenv";
-import fs from "fs";
-import { Command } from "./interfaces/command";
 
 dotenv.config();
 
@@ -21,6 +20,8 @@ const options: ClientOptions = {
 };
 
 const client = new Client(options);
+const commandHandler = new CommandHandler(client);
+
 client.login(process.env.BOT_TOKEN);
 
 client.once("ready", async () => {
@@ -33,12 +34,16 @@ client.on("messageCreate", async (message: Message) => {
 	if (!message.guild) return;
 	if (message.cleanContent === "!deploy" && message.author.id === process.env.BOT_OWNER_ID) {
 		await message.reply({ embeds: [{ description: "Deploying to this guild!" }] });
-		for (const file of fs.readdirSync(`${process.cwd()}/src/commands/`)) {
-			if (!file.endsWith(".ts")) continue;
-
-			const { default: command } = await import(`./commands/${file}`);
-			if (command.prototype instanceof Command)
-				await new command().initialize(message.guild);
+		await commandHandler.registerAllCommands(message.guild);
+	}
+	if (message.cleanContent === "!reset" && message.author.id === process.env.BOT_OWNER_ID) {
+		await message.reply({ embeds: [{ description: "Resetting all commands." }] });
+		if (client.application) {
+			await client.application.commands.fetch();
+			for (const [_, command] of client.application.commands.cache) {
+				console.log(`Deleting ${command.name}`);
+				await client.application.commands.delete(command);
+			}
 		}
 	}
 });
