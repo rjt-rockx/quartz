@@ -1,8 +1,9 @@
-import { Client } from "discord.js";
-import { Service, ReverseEventMap, EventMap } from "../interfaces/service";
+import { Awaitable, Client } from "discord.js";
+import { Service, ReverseEventMap, EventMap, EventArguments } from "../interfaces/service";
 import fs from "fs";
 
 const onText = (text: keyof ReverseEventMap): keyof EventMap => (text.replace(/\w\S*/g, txt => "on" + txt.charAt(0).toUpperCase() + txt.substring(1))) as keyof EventMap;
+type Callable = (...args:unknown[]) => unknown;
 
 export default class ServiceHandler {
 	client: Client;
@@ -37,18 +38,21 @@ export default class ServiceHandler {
 	}
 
 	listenEvents(events: typeof this.events): void {
-		for (const [event, services] of events) {
-			this.client.on(event, (...args) => {
+		for (const [eventName, services] of events) {
+			this.client.on(eventName, (...args) => {
 				if (Array.isArray(services) && services.length) {
 					for (const service of services) {
-						const fnName = onText(event);
-						if (fnName in service) {
-							service[fnName](...args);
-							// borked
-						}
+						const newEventName = onText(eventName);
+						this.callEvent(newEventName, args, service);
 					}
 				}
 			});
+		}
+	}
+
+	callEvent<E extends keyof EventArguments>(eventToCall: E, argumentsToPass: EventArguments[E], service: Service):Awaitable<void> {
+		if ((eventToCall in service) && (service[eventToCall] instanceof Function)) {
+			(service[eventToCall] as Callable)?.(...argumentsToPass as unknown[]);
 		}
 	}
 }

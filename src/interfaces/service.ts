@@ -12,16 +12,16 @@ type ReverseEventMap = {
 	[K in keyof ClientEvents]: onEvent<K>;
 };
 
-type ReverseMap<T extends Record<keyof T, keyof never>> = {
-    [P in T[keyof T]]: {
-        [K in keyof T]: T[K] extends P ? K : never
-    }[keyof T]
+type EventMap = {
+    [K in keyof ClientEvents as onEvent<K>]: K
 }
-
-type EventMap = ReverseMap<ReverseEventMap>;
 
 type Events = {
 	[K in keyof EventMap]?: (...args: ClientEvents[EventMap[K]]) => Awaitable<void>;
+};
+
+type EventArguments = {
+	[K in keyof EventMap]: ClientEvents[EventMap[K]];
 };
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -37,4 +37,4 @@ abstract class Service {
 	}
 }
 
-export { Service, Events, EventMap, ReverseEventMap, ServiceInfo };
+export { Service, Events, EventMap, ReverseEventMap, ServiceInfo, EventArguments };
